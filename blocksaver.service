@@ -1,0 +1,24 @@
+# Place this file in /etc/systemd/system
+# systemctl start paymaster.service
+# systemctl stop paymaster.service
+# journalctl -xe
+# systemctl enable paymaster.service
+
+[Unit]
+Description=PayMaster Service
+After=network.target
+
+[Service]
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+ExecStart=/home/maestro/paymaster/paymaster
+WorkingDirectory=/home/maestro/paymaster
+User=maestro
+Environment="SETTINGS_CONTEXT=live"
+Type=simple
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
