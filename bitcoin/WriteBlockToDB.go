@@ -1,33 +1,23 @@
-package db
+package bitcoin
 
 import (
-	"database/sql"
 	"encoding/json"
-	"fmt"
+
 	// pq will bind to database/sql
 	_ "github.com/lib/pq"
-
-	"../bitcoin"
 )
 
 // WriteBlockToDB comment
-func WriteBlockToDB(block bitcoin.Block) (err error) {
-	dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable host=%s port=%d", dbUser, dbPassword, dbName, dbHost, dbPort)
-	db, err := sql.Open("postgres", dbinfo)
-	if err != nil {
-		return
-	}
-
-	defer db.Close()
+func (b *Bitcoind) WriteBlockToDB(block Block) (err error) {
 
 	blockJSON, _ := json.Marshal(block)
 
 	txJSON, _ := json.Marshal(block.Tx)
 
-	tx, _ := bitcoin.GetRawTransaction(block.Tx[0])
+	tx, _ := b.GetRawTransaction(block.Tx[0], false)
 	cbJSON, _ := json.Marshal(tx)
 
-	insertStmt, err := db.Prepare(`
+	insertStmt, err := b.db.Prepare(`
 		INSERT INTO blocks (
 		 Coin
 		,Hash
@@ -55,7 +45,7 @@ func WriteBlockToDB(block bitcoin.Block) (err error) {
 		)`)
 
 	_, err = insertStmt.Exec(
-		bitcoin.Coin,
+		b.coin,
 		block.Hash,
 		block.Tx[0],
 		block.Size,
@@ -65,7 +55,8 @@ func WriteBlockToDB(block bitcoin.Block) (err error) {
 		0,
 		string(cbJSON),
 		string(txJSON),
-		string(blockJSON))
+		string(blockJSON),
+	)
 
 	return
 }

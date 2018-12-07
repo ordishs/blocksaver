@@ -6,8 +6,7 @@ import (
 	"os/signal"
 	"strings"
 
-	"./services"
-
+	"./bitcoin"
 	"github.com/ordishs/gocore"
 )
 
@@ -41,7 +40,10 @@ func appCleanup() {
 }
 
 func start() {
-	services.ConnectToZMQ()
+	_, err := bitcoin.New("BSV")
+	if err != nil {
+		return
+	}
 
 	waitCh := make(chan bool)
 	<-waitCh
